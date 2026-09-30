@@ -90,9 +90,19 @@ body.dark .line-note { background: rgba(255,255,255,.06); color: var(--sky); }
 .warn { font-size: 13px; border-radius: 12px; padding: 10px 14px; margin-top: 14px; background: #FDEEE9; color: #A8401E; }
 body.dark .warn { background: rgba(240,100,60,.14); color: #FFC3B0; }
 
+/* 화면 높이가 낮아도(카카오톡 인앱 등) 기록 화면이 한 화면에 들어오도록 높이에 맞춰 줄인다 */
+.wrap svg.cup { width: auto; height: clamp(64px, 19dvh, 170px); margin-top: clamp(4px, 1.4dvh, 12px); }
+.timer-num { font-size: clamp(34px, 7dvh, 52px); margin-top: clamp(4px, 1.4dvh, 14px); }
+.total-top { margin-top: clamp(4px, 1.4dvh, 14px); }
+.total-top .v { font-size: clamp(22px, 4dvh, 30px); }
+.pills { margin-top: clamp(10px, 2.4dvh, 22px); }
+.pill { padding: clamp(8px, 1.3dvh, 10px) 0; }
+.wrap > .btn { margin-top: clamp(10px, 2dvh, 20px); padding: clamp(12px, 1.9dvh, 15px); }
+.links { margin-top: clamp(6px, 1.4dvh, 14px); }
+
 /* 기록 화면 도구 (음악·다니엘 기도) */
-.tools { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
-.tool { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px; background: rgba(255,255,255,.08); color: var(--sky); font-size: 13px; font-weight: 600; text-decoration: none; }
+.tools { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
+.tool { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.08); color: var(--sky); font-size: 13px; font-weight: 600; text-decoration: none; }
 .tool[aria-pressed="true"] { background: #fff; color: var(--navy); }
 .table tr.tap { cursor: pointer; }
 .table tr.tap:active td { background: var(--soft); }
