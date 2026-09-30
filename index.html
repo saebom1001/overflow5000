@@ -799,7 +799,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
     if (S.adminPeople) {
       if (!S.adminPeople.length) h += '<div class="empty" style="padding:16px 0">찾는 사람이 없어요.</div>';
       else h += S.adminPeople.map(function (p) {
-        var st = [p.hasPin ? '비밀번호 있음' : '비밀번호 없음', p.sessions ? '로그인 ' + p.sessions + '곳' : '로그인 없음'];
+        var st = [p.hasPin ? '비밀번호 있음' : '비밀번호 없음'];
         if (p.locked) st.push('잠김');
         var btn = function (a, label) { return '<button class="btn ghost sm" data-act="acct" data-a="' + a + '" data-cell="' + esc(p.cell) + '" data-name="' + esc(p.name) + '">' + label + '</button>'; };
         return '<div class="person" style="margin-top:10px"><div class="t" style="font-weight:600">' + whoLabel(p) + (p.role !== '셀원' ? '<span class="tag">' + esc(p.role) + '</span>' : '') + '</div>' +
