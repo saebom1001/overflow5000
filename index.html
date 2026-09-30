@@ -502,7 +502,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
   function renderLogin() {
     var L = S.login, body = '';
     if (L.step === 'name') {
-      body = '<h2>이름으로 시작하기</h2><p>명단에 있는 이름을 띄어쓰기까지 똑같이 입력해 주세요.</p>' +
+      body = '<h2>이름으로 시작하기</h2>' +
         '<form data-form="search" style="margin-top:16px"><input class="input" id="q" autocomplete="off" placeholder="홍길동" value="' + esc(L.q) + '" maxlength="20">' +
         '<button class="btn" type="submit"' + (L.busy ? ' disabled' : '') + '>' + (L.busy ? '찾는 중…' : '찾기') + '</button></form>';
       if (L.results) {
