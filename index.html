@@ -677,7 +677,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
         g.list.map(function (r) {
           return '<button class="row" data-act="edit" data-id="' + esc(r.id) + '"><span class="d">' + mdw(r.date) + '</span>' +
             '<span class="b"><div class="t">' + esc(r.cat) + (r.sunday ? '<span class="tag warn-t">주일예배 확인</span>' : '') + '</div>' +
-            '<div class="m">' + (r.method === '타이머' ? '타이머 · ' : '') + '실제 ' + hms(r.sec) + multTag(r.mult) + '</div></span>' +
+            '<div class="m">' + (r.method === '셀장입력' ? '셀장님 입력 · ' + (r.week ? r.week + '주차 합계' : '') : (r.method === '타이머' ? '타이머 · ' : '') + '실제 ' + hms(r.sec) + multTag(r.mult)) + '</div></span>' +
             '<span class="r">' + hm(r.recog) + '</span></button>';
         }).join('');
     });
@@ -724,9 +724,9 @@ body.dark #toast { background: #fff; color: var(--navy); }
       '<div class="stat"><div class="k">참여</div><div class="v">' + joined + ' / ' + L.members.length + '명</div></div></div>' +
       '<table class="table" style="margin-top:14px"><thead><tr><th>이름</th><th class="r">' + wk + '주차</th><th class="r">10월 누적</th></tr></thead><tbody>' +
       L.members.map(function (p) {
-        return '<tr class="tap" data-act="leaderAdd" data-name="' + esc(p.name) + '"><td>' + esc(p.name) + (p.role === '셀장' ? '<span class="tag">셀장</span>' : '') + ' <span class="plus">+</span></td><td class="r">' + hm(p.weeks[wk] || 0) + '</td><td class="r">' + hm(p.total) + '</td></tr>';
+        return '<tr class="tap" data-act="member" data-name="' + esc(p.name) + '"><td>' + esc(p.name) + (p.role === '셀장' ? '<span class="tag">셀장</span>' : '') + ' <span class="plus">+</span></td><td class="r">' + hm(p.weeks[wk] || 0) + '</td><td class="r">' + hm(p.total) + '</td></tr>';
       }).join('') + '<tr class="sum"><td>합계</td><td class="r">' + hm(sumW) + '</td><td class="r">' + hm(sumT) + '</td></tr></tbody></table>' +
-      '<p class="note">이름을 누르면 셀원 기록을 대신 입력할 수 있어요. 입력한 사람은 시트에 남아요.</p>' +
+      '<p class="note">이름을 누르면 주간 합계 입력·수정·삭제와 비밀번호 초기화를 할 수 있어요.</p>' +
       '<button class="btn" data-act="copyLeader">게시판 문구 복사</button>' +
       '<div class="links"><button data-act="refreshLeader">새로고침</button></div>';
     if (L.sunday.length) h += '<div class="section">주일예배 확인이 필요한 기록<span>' + L.sunday.length + '건</span></div>' + L.sunday.map(function (s) {
@@ -844,7 +844,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
   function renderSheet() {
     var box = document.getElementById('sheet'), s = S.sheet;
     if (!s) { box.innerHTML = ''; return; }
-    var inner = { menu: sheetMenu, stop: sheetStop, fix: sheetFix, edit: sheetEdit, direct: sheetDirect, confirm: sheetConfirm, copy: sheetCopy }[s.type](s);
+    var inner = { menu: sheetMenu, stop: sheetStop, fix: sheetFix, edit: sheetEdit, direct: sheetDirect, confirm: sheetConfirm, copy: sheetCopy, member: sheetMember, weekly: sheetWeekly }[s.type](s);
     box.innerHTML = '<div class="sheet-bg" data-act="sheetBg"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>' + inner + '</div></div>';
   }
   function hmsInputs(sec, p) {
@@ -918,6 +918,40 @@ body.dark #toast { background: #fff; color: var(--navy); }
       '<button class="btn" data-act="saveEdit"' + (S.busy ? ' disabled' : '') + '>' + busyLabel('저장') + '</button>' +
       '<div class="links"><button data-act="closeSheet">닫기</button><button data-act="delRec" style="color:#A8401E">' + (s.confirmDel ? '한 번 더 누르면 삭제돼요' : '삭제') + '</button></div>';
   }
+  /* 셀장: 셀원 한 명 관리 (주간 합계 목록, 비밀번호 초기화) */
+  function memberOf(name) { return (S.leader && S.leader.members.filter(function (m) { return m.name === name; })[0]) || null; }
+  function sheetMember(s) {
+    var m = memberOf(s.name);
+    if (!m) return '<h2>' + esc(s.name) + '님</h2><p class="meta">명단을 새로고침해 주세요.</p>';
+    var list = m.weekly.length ? m.weekly.map(function (e) {
+      return '<div class="row"><span class="d">' + (e.week ? e.week + '주차' : '기간 외') + '</span><span class="b"><div class="t">' + hm(e.sec) + '</div><div class="m">' + esc(e.by || '') + '</div></span>' +
+        '<button class="chip" data-act="weeklyEdit" data-id="' + esc(e.id) + '">편집</button> <button class="chip" data-act="weeklyDel" data-id="' + esc(e.id) + '">삭제</button></div>';
+    }).join('') : '<p class="meta" style="margin:8px 0">아직 입력한 주간 합계가 없어요.</p>';
+    return '<h2>' + esc(m.name) + '님</h2><p class="meta" style="margin:4px 0 0">' + (S.leader.cell ? esc(S.leader.cell) + '셀 · ' : '') + '10월 누적 ' + hm(m.total) + '</p>' +
+      '<div class="section" style="margin-top:20px">주간 합계 (셀장님 입력)</div>' + list +
+      '<button class="btn" data-act="weeklyNew">주간 합계 추가</button>' +
+      '<button class="btn ghost" data-act="memberPin" style="margin-top:10px">비밀번호 초기화</button>' +
+      '<div class="links"><button data-act="closeSheet">닫기</button></div>';
+  }
+  function startedWeeks() { var t = today(); return S.leader.weeks.filter(function (w) { return w.start <= t; }); }
+  function sheetWeekly(s) {
+    var weeks = startedWeeks();
+    return '<h2>' + esc(s.name) + '님 주간 합계 ' + (s.id ? '편집' : '추가') + '</h2>' +
+      '<p class="meta" style="margin:4px 0 0">한 주에 한 총 시간을 그대로 넣어 주세요. (성전 2배를 이미 계산한 시간)</p>' +
+      '<div class="field"><div class="lbl">주차</div><div class="chips" style="margin-top:0">' + (weeks.length ? weeks.map(function (w) {
+        return '<button class="chip" data-act="weeklyWeek" data-w="' + w.no + '" aria-pressed="' + (s.week === w.no) + '">' + w.no + '주차 (' + md(w.start) + '~' + md(w.end) + ')</button>';
+      }).join('') : '<span class="meta">아직 시작한 주차가 없어요.</span>') + '</div></div>' +
+      '<div class="field"><div class="lbl">총 시간</div><div class="hms">' +
+      '<input class="input" id="wkH" inputmode="numeric" value="' + Math.floor(s.sec / 3600) + '" aria-label="시간">시간' +
+      '<input class="input" id="wkM" inputmode="numeric" value="' + Math.floor(s.sec % 3600 / 60) + '" aria-label="분">분</div>' +
+      '<div class="chips">' + [[1800, '+30분'], [3600, '+1시간'], [18000, '+5시간'], [36000, '+10시간']].map(function (b) {
+        return '<button class="chip" data-act="weeklyAdd" data-s="' + b[0] + '">' + b[1] + '</button>';
+      }).join('') + '<button class="chip" data-act="weeklyAdd" data-s="0">초기화</button></div></div>' +
+      '<div class="err" id="wkErr"></div>' +
+      '<button class="btn" data-act="weeklySave"' + (S.busy ? ' disabled' : '') + '>' + busyLabel(s.id ? '저장' : '추가') + '</button>' +
+      '<div class="links"><button data-act="weeklyBack">뒤로</button></div>';
+  }
+
   function sheetConfirm(s) {
     return '<h2>' + esc(s.title) + '</h2><p class="meta" style="margin:6px 0 0">' + esc(s.desc) + '</p>' +
       '<button class="btn" data-act="confirmYes">' + esc(s.yes) + '</button><div class="links"><button data-act="closeSheet">취소</button></div>';
@@ -1050,7 +1084,47 @@ body.dark #toast { background: #fff; color: var(--navy); }
     },
 
     direct: function () { S.sheet = { type: 'direct', cat: S.cat, date: maxDate(), sec: 0 }; renderSheet(); },
-    leaderAdd: function (el) { S.sheet = { type: 'direct', cat: null, date: maxDate(), sec: 0, target: { cell: S.leader.cell, name: el.dataset.name } }; renderSheet(); },
+    member: function (el) { S.sheet = { type: 'member', name: el.dataset.name }; renderSheet(); },
+    weeklyNew: function () {
+      var ws = startedWeeks(), cur = S.leader.currentWeek;
+      S.sheet = { type: 'weekly', name: S.sheet.name, id: null, week: ws.some(function (w) { return w.no === cur; }) ? cur : (ws.length ? ws[ws.length - 1].no : null), sec: 0 };
+      renderSheet();
+    },
+    weeklyEdit: function (el) {
+      var m = memberOf(S.sheet.name), e = m && m.weekly.filter(function (x) { return x.id === el.dataset.id; })[0];
+      if (!e) return;
+      S.sheet = { type: 'weekly', name: m.name, id: e.id, week: e.week, sec: e.sec };
+      renderSheet();
+    },
+    weeklyWeek: function (el) { syncWeekly(); S.sheet.week = +el.dataset.w; renderSheet(); },
+    weeklyAdd: function (el) { syncWeekly(); var v = +el.dataset.s; S.sheet.sec = v ? S.sheet.sec + v : 0; renderSheet(); },
+    weeklyBack: function () { S.sheet = { type: 'member', name: S.sheet.name }; renderSheet(); },
+    weeklySave: function () {
+      syncWeekly();
+      var s = S.sheet, err = document.getElementById('wkErr');
+      if (!s.week) { err.textContent = '주차를 골라 주세요.'; return; }
+      if (s.sec < 60) { err.textContent = '1분 이상 넣어 주세요.'; return; }
+      S.busy = true; renderSheet();
+      api('leaderSaveWeekly', S.token, S.leader.cell, s.name, { id: s.id, week: s.week, sec: s.sec }).then(function (L) {
+        S.busy = false; S.leader = L; S.sheet = { type: 'member', name: s.name }; render(); toast(s.name + '님 ' + s.week + '주차 ' + hm(s.sec) + (s.id ? ' 저장했어요' : ' 추가했어요')); refreshViews();
+      }, function (e) { sheetErr('wkErr', e); });
+    },
+    weeklyDel: function (el) {
+      var name = S.sheet.name, id = el.dataset.id;
+      confirmSheet(name + '님 주간 합계를 지울까요?', '이 주차 합계가 누적에서 빠져요.', '지우기', function () {
+        api('leaderDeleteWeekly', S.token, S.leader.cell, name, id).then(function (L) {
+          S.leader = L; S.sheet = { type: 'member', name: name }; render(); toast('지웠어요.'); refreshViews();
+        }, function (e) { toast(e.message); S.sheet = { type: 'member', name: name }; renderSheet(); });
+      });
+    },
+    memberPin: function () {
+      var name = S.sheet.name;
+      confirmSheet(name + '님 비밀번호를 초기화할까요?', '로그인이 풀리고, 다음 접속 때 본인이 새 비밀번호 4자리를 정해요.', '초기화', function () {
+        api('leaderResetPin', S.token, S.leader.cell, name).then(function () {
+          S.sheet = { type: 'member', name: name }; renderSheet(); toast(name + '님 비밀번호를 초기화했어요.');
+        }, function (e) { toast(e.message); });
+      });
+    },
     bgm: function () { toggleBgm(); },
     bgmPlay: function () { playPauseBgm(); },
     dCat: function (el) { syncDirect(); S.sheet.cat = el.dataset.cat; renderSheet(); },
@@ -1083,6 +1157,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
     edit: function (el) {
       var r = S.mine.records.filter(function (x) { return x.id === el.dataset.id; })[0];
       if (!r) return;
+      if (r.method === '셀장입력') { toast('셀장님이 입력한 주간 합계예요. 고칠 게 있으면 셀장님께 말씀해 주세요.'); return; }
       S.sheet = { type: 'edit', rec: r, date: r.date, cat: r.cat, sec: r.sec, confirmDel: false };
       renderSheet();
     },
@@ -1159,6 +1234,11 @@ body.dark #toast { background: #fff; color: var(--navy); }
     var s = S.sheet; if (!s || s.type !== 'direct') return;
     var d = document.getElementById('dD'); if (d) s.date = d.value;
     var h = document.getElementById('dH'), m = document.getElementById('dM');
+    if (h && m) s.sec = Math.max(0, (parseInt(h.value, 10) || 0) * 3600 + (parseInt(m.value, 10) || 0) * 60);
+  }
+  function syncWeekly() {
+    var s = S.sheet; if (!s || s.type !== 'weekly') return;
+    var h = document.getElementById('wkH'), m = document.getElementById('wkM');
     if (h && m) s.sec = Math.max(0, (parseInt(h.value, 10) || 0) * 3600 + (parseInt(m.value, 10) || 0) * 60);
   }
   function syncEdit() {
