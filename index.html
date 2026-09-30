@@ -724,11 +724,16 @@ body.dark #toast { background: #fff; color: var(--navy); }
       '<div class="stat"><div class="k">참여</div><div class="v">' + joined + ' / ' + L.members.length + '명</div></div></div>' +
       '<table class="table" style="margin-top:14px"><thead><tr><th>이름</th><th class="r">' + wk + '주차</th><th class="r">10월 누적</th></tr></thead><tbody>' +
       L.members.map(function (p) {
-        return '<tr class="tap" data-act="member" data-name="' + esc(p.name) + '"><td>' + esc(p.name) + (p.role === '셀장' ? '<span class="tag">셀장</span>' : '') + ' <span class="plus">+</span></td><td class="r">' + hm(p.weeks[wk] || 0) + '</td><td class="r">' + hm(p.total) + '</td></tr>';
+        return '<tr class="tap" data-act="member" data-name="' + esc(p.name) + '"><td>' + esc(p.name) + (p.role === '셀장' ? '<span class="tag">셀장</span>' : '') + ' <span class="plus">›</span></td><td class="r">' + hm(p.weeks[wk] || 0) + '</td><td class="r">' + hm(p.total) + '</td></tr>';
       }).join('') + '<tr class="sum"><td>합계</td><td class="r">' + hm(sumW) + '</td><td class="r">' + hm(sumT) + '</td></tr></tbody></table>' +
-      '<p class="note">이름을 누르면 주간 합계 입력·수정·삭제와 비밀번호 초기화를 할 수 있어요.</p>' +
+      '<p class="note">이름을 누르면 그 셀원의 주간 합계를 넣거나 고칠 수 있어요.</p>' +
       '<button class="btn" data-act="copyLeader">게시판 문구 복사</button>' +
-      '<div class="links"><button data-act="refreshLeader">새로고침</button></div>';
+      '<div class="links"><button data-act="refreshLeader">새로고침</button></div>' +
+      '<div class="section">비밀번호 초기화</div>' +
+      '<p class="note" style="margin-top:2px">비밀번호를 잊은 셀원 이름을 누르세요. 초기화하면 그 셀원은 다음 접속 때 새 비밀번호 4자리를 정해요.</p>' +
+      '<div class="chips">' + L.members.map(function (p) {
+        return '<button class="chip" data-act="pinFor" data-name="' + esc(p.name) + '">' + esc(p.name) + '</button>';
+      }).join('') + '</div>';
     if (L.sunday.length) h += '<div class="section">주일예배 확인이 필요한 기록<span>' + L.sunday.length + '건</span></div>' + L.sunday.map(function (s) {
       return '<div class="row"><span class="d">' + mdw(s.date) + '</span><span class="b"><div class="t">' + esc(s.name) + '</div><div class="m">' + esc(s.cat) + '</div></span><span class="r">' + hm(s.sec) + '</span></div>';
     }).join('');
@@ -930,7 +935,8 @@ body.dark #toast { background: #fff; color: var(--navy); }
     return '<h2>' + esc(m.name) + '님</h2><p class="meta" style="margin:4px 0 0">' + (S.leader.cell ? esc(S.leader.cell) + '셀 · ' : '') + '10월 누적 ' + hm(m.total) + '</p>' +
       '<div class="section" style="margin-top:20px">주간 합계 (셀장님 입력)</div>' + list +
       '<button class="btn" data-act="weeklyNew">주간 합계 추가</button>' +
-      '<button class="btn ghost" data-act="memberPin" style="margin-top:10px">비밀번호 초기화</button>' +
+      '<div class="section" style="margin-top:22px">비밀번호</div><p class="note" style="margin-top:2px">비밀번호를 잊었을 때 누르세요. 다음 접속 때 새로 정해요.</p>' +
+      '<button class="btn ghost" data-act="memberPin" style="margin-top:8px">비밀번호 초기화</button>' +
       '<div class="links"><button data-act="closeSheet">닫기</button></div>';
   }
   function startedWeeks() { var t = today(); return S.leader.weeks.filter(function (w) { return w.start <= t; }); }
@@ -1117,6 +1123,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
         }, function (e) { toast(e.message); S.sheet = { type: 'member', name: name }; renderSheet(); });
       });
     },
+    pinFor: function (el) { S.sheet = { type: 'member', name: el.dataset.name }; actions.memberPin(); },
     memberPin: function () {
       var name = S.sheet.name;
       confirmSheet(name + '님 비밀번호를 초기화할까요?', '로그인이 풀리고, 다음 접속 때 본인이 새 비밀번호 4자리를 정해요.', '초기화', function () {
