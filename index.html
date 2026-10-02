@@ -96,7 +96,17 @@ body.dark .line-note { background: rgba(255,255,255,.06); color: var(--sky); }
 body.dark .warn { background: rgba(240,100,60,.14); color: #FFC3B0; }
 
 /* 화면 높이가 낮아도(카카오톡 인앱 등) 기록 화면이 한 화면에 들어오도록 높이에 맞춰 줄인다 */
-.wrap svg.cup { width: auto; height: clamp(64px, 19dvh, 170px); margin-top: clamp(4px, 1.4dvh, 12px); }
+.wrap svg.cup { width: auto; height: clamp(64px, 19dvh, 170px); margin-top: clamp(4px, 1.4dvh, 12px); overflow: visible; }
+.cupwrap { position: relative; }
+.wrap .cupwrap.big svg.cup { height: clamp(120px, 25dvh, 190px); margin-top: clamp(8px, 2dvh, 18px); }
+
+/* 잔 순간 연출: 저장 물방울 · 튀는 물 · 물결 · 단계를 넘을 때 빛 터짐 */
+.fx { position: absolute; left: 50%; pointer-events: none; }
+.fx.drop { width: 16px; height: 22px; margin-left: -8px; }
+.fx.ripple { width: 22px; height: 6px; margin-left: -11px; border: 1.5px solid #fff; border-radius: 50%; opacity: 0; }
+.fx.spray { width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #D6E6FF; }
+.fx.bloom { width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; }
+.fx.mote { width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; }
 .timer-num { font-size: clamp(34px, 7dvh, 52px); margin-top: clamp(4px, 1.4dvh, 14px); }
 .total-top { margin-top: clamp(4px, 1.4dvh, 14px); }
 .total-top .v { font-size: clamp(22px, 4dvh, 30px); }
@@ -176,14 +186,32 @@ body.dark .btn { background: var(--sky); color: var(--navy); }
 .meta { font-size: 13px; color: var(--muted); }
 .err { color: #C03D14; font-size: 13px; min-height: 20px; margin-top: 8px; }
 
-/* 함께 채우는 잔 */
+/* 함께 채우는 잔: 주차 칩 → 잔(눈금) → 누적 시간 → 목표 대비 % */
+.tog-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; }
+.wk { font-size: 12px; color: var(--sky); background: rgba(255,255,255,.08); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.wk b { color: #fff; font-weight: 600; }
 .total { text-align: center; margin-top: 12px; }
 .total .num { font-size: 48px; line-height: 1; }
-.total div { font-size: 13px; color: var(--sky); margin-top: 4px; }
-.bar { height: 6px; border-radius: 9px; background: rgba(255,255,255,.12); margin: 14px 4px 0; overflow: hidden; }
-.bar i { display: block; height: 100%; min-width: 6px; border-radius: inherit; background: var(--sky); }
-.kv-dark { display: flex; justify-content: space-between; font-size: 13px; color: var(--sky); margin-top: 12px; }
-.kv-dark b { color: #fff; font-weight: 600; }
+.total .u { font-size: 18px; font-weight: 700; margin-left: 4px; }
+.total div { font-size: 13px; color: var(--sky); margin-top: 6px; }
+.total .sum { color: #fff; margin-top: 0; }
+.total b { color: #fff; font-weight: 600; }
+.total .gold { color: #F2CF74; }
+.vfull { margin-top: 20px; text-align: center; font-size: 14px; line-height: 1.9; color: #fff; }
+.vfull span, .vfull small { display: block; opacity: 0; transform: translateY(6px); animation: rise .9s ease-out forwards; }
+.vfull small { color: #F2CF74; font-size: 12px; margin-top: 4px; letter-spacing: .1em; }
+.vfull.still span, .vfull.still small { animation: none; opacity: 1; transform: none; }
+@keyframes rise { to { opacity: 1; transform: none; } }
+.flood-pad { height: 100px; }
+.flood { position: fixed; left: 0; right: 0; bottom: calc(56px + var(--safe-b)); height: 0; z-index: 5; pointer-events: none; overflow: hidden; transition: height 3s cubic-bezier(.2,.7,.3,1); }
+.flood.on { height: 96px; }
+.flood.still { transition: none; }
+.flood svg { position: absolute; left: 0; top: 0; width: 200%; height: 140px; }
+.flood .w1 { animation: flow 9s linear infinite; }
+.flood .w2 { animation: flow 6s linear infinite reverse; }
+.flood .w3 { animation: flow 4.5s linear infinite; }
+@keyframes flow { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .flood g { animation: none; } }
 .more { display: block; width: 100%; margin-top: 20px; padding: 12px; border-radius: 14px; background: rgba(255,255,255,.06); color: var(--sky); font-size: 13px; }
 .cellbars { margin-top: 8px; }
 .cellbars .c { margin-top: 12px; font-size: 13px; }
@@ -201,7 +229,7 @@ body.dark .btn { background: var(--sky); color: var(--navy); }
 .person .row-btns .btn { width: auto; flex: 1; }
 
 /* 하단 탭 */
-.nav { flex: none; z-index: 20; background: #fff; border-top: 1px solid var(--line); padding: 6px 8px calc(8px + var(--safe-b)); }
+.nav { flex: none; position: relative; z-index: 20; background: #fff; border-top: 1px solid var(--line); padding: 6px 8px calc(8px + var(--safe-b)); }
 body.dark .nav { background: var(--navy); border-top-color: rgba(255,255,255,.08); }
 .nav-in { max-width: 480px; margin: 0 auto; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
 .nav button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; font-size: 11px; font-weight: 600; color: #A7ADC2; }
@@ -379,12 +407,115 @@ body.dark #toast { background: #fff; color: var(--navy); }
     back: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>'
   };
 
-  /* ---------------- 잔 그림: 두 겹 물결 ---------------- */
+  /* ---------------- 잔 그림: 두 겹 물결 + 단계 효과 ----------------
+   * look(0~5)이 오를수록 물·빛·움직임 층이 겹친다. 기준은 docs/gamification.md
+   * 1 물+기포 · 2 맑은 물빛·물속 빛줄기·테두리 빛 · 3 반짝이 · 4 금빛 테두리·반짝이·빛무리 · 5 넘침
+   * opt.hearts: 하트 방울(함께 잔 3,000시간~), opt.marks: 잔 옆 눈금 [{level, on}] */
   var CUP = 'M36 34 H184 L168 160 Q163 186 136 190 H84 Q57 186 52 160 Z';
   var WAVE_A = 'M-220 10 Q-192 -6 -165 10 T-110 10 T-55 10 T0 10 T55 10 T110 10 T165 10 T220 10 T275 10 T330 10 V260 H-220 Z';
   var WAVE_B = 'M-220 8 Q-192 20 -165 8 T-110 8 T-55 8 T0 8 T55 8 T110 8 T165 8 T220 8 T275 8 T330 8 V260 H-220 Z';
+  var STAR = 'M0 -5 L1.2 -1.2 L5 0 L1.2 1.2 L0 5 L-1.2 1.2 L-5 0 L-1.2 -1.2 Z';
+  var HEART = 'M0 4.2 C-1.2 3.2 -5 0.6 -5 -1.8 C-5 -3.6 -3.6 -4.8 -2.2 -4.8 C-1.2 -4.8 -0.4 -4.2 0 -3.4 C0.4 -4.2 1.2 -4.8 2.2 -4.8 C3.6 -4.8 5 -3.6 5 -1.8 C5 0.6 1.2 3.2 0 4.2 Z';
+  // 넘칠 때 물이 잔 겉면 → 손잡이 → 받침으로 타고 내려가는 길(왼쪽, 오른쪽은 좌우 대칭)
+  var RUN_L = 'M37 33 C29 33 31 44 34 58 L50 160 Q55 187 84 192 Q103 195 107 205 L107 226';
+  var RUN_R = 'M183 33 C191 33 189 44 186 58 L170 160 Q165 187 136 192 Q117 195 113 205 L113 226';
+  var PAL = [null,
+    { top: '#5E93EE', deep: '#173E9C', back: '#BFD5F7' },
+    { top: '#86B8FF', deep: '#1D56C8', back: '#D6E6FF' },
+    { top: '#8FC0FF', deep: '#2160D6', back: '#DDEBFF' },
+    { top: '#9CC8FF', deep: '#2463D8', back: '#E6EFFF' },
+    { top: '#AAD1FF', deep: '#2A6BE0', back: '#EEF5FF' }];
   function waterY(level) { return 190 - 156 * Math.max(0, Math.min(1, level)); }
-  function cupSvg(level, w, id) {
+  function anim(attr, values, dur, begin) { return '<animate attributeName="' + attr + '" values="' + values + '" dur="' + dur + 's" begin="' + (begin || 0) + 's" repeatCount="indefinite"/>'; }
+  function cupSvg(level, w, id, look, opt) {
+    look = look || 0; opt = opt || {};
+    if (!look) return plainCup(level, w, id);
+    var y = waterY(level), p = PAL[look], gold = look >= 4, rim = gold ? 'url(#' + id + 'rim)' : '#fff', i;
+    var h = '<svg class="cup" viewBox="0 0 220 250" width="' + w + '" height="' + Math.round(w * 250 / 220) + '" aria-hidden="true"><defs>' +
+      '<clipPath id="' + id + '"><path d="' + CUP + '"/></clipPath>' +
+      '<linearGradient id="' + id + 'w" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="170"><stop offset="0" stop-color="' + p.top + '"/><stop offset="1" stop-color="' + p.deep + '"/></linearGradient>' +
+      '<linearGradient id="' + id + 'rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF4CF"/><stop offset=".5" stop-color="#E9B949"/><stop offset="1" stop-color="#F9DE8E"/></linearGradient>' +
+      '<radialGradient id="' + id + 'halo"><stop offset="0" stop-color="#F2CF74" stop-opacity=".5"/><stop offset=".55" stop-color="#F2CF74" stop-opacity=".14"/><stop offset="1" stop-color="#F2CF74" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="' + id + 'ray" gradientUnits="userSpaceOnUse" cx="110" cy="100" r="170"><stop offset=".15" stop-color="#FFE7A3" stop-opacity=".45"/><stop offset="1" stop-color="#FFE7A3" stop-opacity="0"/></radialGradient>' +
+      '<filter id="' + id + 'b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4"/></filter>' +
+      '<filter id="' + id + 's" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="1.4" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+    // 뒤쪽 빛: 천천히 도는 빛살(5), 금빛 빛무리(4~), 테두리 빛(2~)
+    if (look >= 5) {
+      h += '<g opacity=".9"><g>';
+      for (i = 0; i < 12; i++) {
+        var a1 = (i * 30 - 4) * Math.PI / 180, a2 = (i * 30 + 4) * Math.PI / 180;
+        h += '<path d="M110 100 L' + (110 + 170 * Math.cos(a1)).toFixed(1) + ' ' + (100 + 170 * Math.sin(a1)).toFixed(1) + ' L' + (110 + 170 * Math.cos(a2)).toFixed(1) + ' ' + (100 + 170 * Math.sin(a2)).toFixed(1) + ' Z" fill="url(#' + id + 'ray)"/>';
+      }
+      h += '<animateTransform attributeName="transform" type="rotate" from="0 110 100" to="360 110 100" dur="60s" repeatCount="indefinite"/></g></g>';
+    }
+    if (gold) h += '<circle cx="110" cy="105" r="' + (look >= 5 ? 135 : 115) + '" fill="url(#' + id + 'halo)">' + anim('opacity', '.65;1;.65', 4) + '</circle>';
+    if (look >= 2) h += '<path d="' + CUP + '" fill="none" stroke="' + (gold ? '#F2CF74' : '#BFD5F7') + '" stroke-width="7" filter="url(#' + id + 'b)">' + anim('opacity', '.15;.6;.15', 3.4) + '</path>';
+    // 잔 속
+    h += '<g clip-path="url(#' + id + ')"><rect width="220" height="250" fill="#16275F"/>';
+    if (level > 0) {
+      h += '<g id="' + id + 'A" transform="translate(0,' + (y - 10).toFixed(1) + ')"><path fill="' + p.back + '" opacity=".5" d="' + WAVE_A + '"><animateTransform attributeName="transform" type="translate" from="0 0" to="-110 0" dur="5.5s" repeatCount="indefinite"/></path></g>' +
+        '<g id="' + id + 'B" transform="translate(0,' + y.toFixed(1) + ')"><g><path fill="url(#' + id + 'w)" d="' + WAVE_B + '"/>' +
+        '<path fill="none" stroke="' + (gold ? '#FFE3A0' : '#fff') + '" stroke-width="1.6" opacity="' + (gold ? '.85' : '.4') + '" d="' + WAVE_B + '"/>' +
+        '<animateTransform attributeName="transform" type="translate" from="0 0" to="110 0" dur="3.8s" repeatCount="indefinite"/></g></g>';
+      if (opt.hearts) [[88, 0, 2], [126, 1.5, 1.6], [106, 3, 2.3], [146, .8, 1.5]].forEach(function (t) {
+        var d = 5.2;
+        h += '<g opacity="0"><path d="' + HEART + '" fill="#FFB3C8" fill-opacity=".6" stroke="#FFE4EC" stroke-width=".7"/>' +
+          '<path d="M-2.6 -2.2 a1.6 1.6 0 0 1 1.8 -1" fill="none" stroke="#fff" stroke-width=".9" stroke-linecap="round" opacity=".9"/>' +
+          '<animateTransform attributeName="transform" type="translate" values="' + t[0] + ' 184;' + (t[0] + 5) + ' ' + ((184 + y) / 2).toFixed(1) + ';' + (t[0] - 3) + ' ' + (y + 6).toFixed(1) + '" dur="' + d + 's" begin="' + t[1] + 's" repeatCount="indefinite"/>' +
+          '<animateTransform attributeName="transform" type="scale" additive="sum" values="' + (t[2] * .7) + ';' + t[2] + ';' + (t[2] * 1.25) + '" keyTimes="0;.85;1" dur="' + d + 's" begin="' + t[1] + 's" repeatCount="indefinite"/>' +
+          '<animate attributeName="opacity" values="0;.95;.95;0" keyTimes="0;.15;.85;1" dur="' + d + 's" begin="' + t[1] + 's" repeatCount="indefinite"/></g>';
+      });
+      if (look >= 2) [[0, 7.5, 16], [3.5, 9.5, 10]].forEach(function (c) {
+        h += '<rect x="-30" y="' + (y + 4).toFixed(1) + '" width="' + c[2] + '" height="200" fill="#fff" opacity=".08" transform="skewX(-18)">' +
+          '<animate attributeName="x" values="-30;250" dur="' + c[1] + 's" begin="' + c[0] + 's" repeatCount="indefinite"/></rect>';
+      });
+      for (i = 0; i < (look >= 3 ? 6 : 3); i++) {
+        var bx = 76 + (i * 37) % 70, bd = 3.2 + (i % 3) * 0.9;
+        h += '<circle cx="' + bx + '" cy="184" r="' + (1.4 + (i % 3) * 0.5) + '" fill="none" stroke="#fff" stroke-width="1" opacity="0">' +
+          anim('cy', '184;' + (y + 8).toFixed(1), bd, i * 0.8) + anim('cx', bx + ';' + (bx + 4) + ';' + (bx - 2), bd, i * 0.8) + anim('opacity', '0;.7;.6;0', bd, i * 0.8) + '</circle>';
+      }
+      if (look >= 3) (gold ? [[64, 6, 0, 1], [92, 16, .9, .8], [118, 4, 1.7, 1.1], [146, 14, .4, .9], [80, 30, 2.2, .7], [132, 28, 1.3, .8], [158, 4, 2.6, .7], [104, 40, .6, .6]]
+        : [[72, 10, 0, .9], [106, 22, 1.1, .8], [140, 8, 2, 1], [92, 36, .6, .7], [128, 34, 1.6, .7]]).forEach(function (st) {
+        h += '<g transform="translate(' + st[0] + ',' + Math.min(176, y + st[1]).toFixed(1) + ') scale(' + st[3] + ')"><path d="' + STAR + '" fill="' + (gold ? '#FFD86B' : '#fff') + '"' + (gold ? ' filter="url(#' + id + 's)"' : '') + ' opacity="0">' +
+          anim('opacity', '0;1;0', 2.6, st[2]) + '<animateTransform attributeName="transform" type="rotate" values="0;45;90" dur="2.6s" begin="' + st[2] + 's" repeatCount="indefinite"/></path></g>';
+      });
+    }
+    h += '</g>';
+    // 유리 반사
+    h += '<path d="M47 48 Q53 108 61 152" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".16"/><path d="M171 50 L167 78" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".1"/>';
+    if (look >= 5) {
+      // 잔 위로 부풀어 오른 물 + 겉면을 타고 흐르는 물
+      var dome = 'M34 35 Q110 17 186 35;M34 35 Q100 22 186 35;M34 35 Q120 20 186 35;M34 35 Q110 17 186 35';
+      h += '<path fill="url(#' + id + 'w)" d="M34 35 Q110 17 186 35 Z">' + anim('d', dome.replace(/;/g, ' Z;') + ' Z', 3.2) + '</path>' +
+        '<path fill="none" stroke="#FFE3A0" stroke-width="1.6" opacity=".9" d="M34 35 Q110 17 186 35">' + anim('d', dome, 3.2) + '</path>';
+      [RUN_L, RUN_R].forEach(function (d, k) {
+        h += '<path d="' + d + '" fill="none" stroke="' + p.top + '" stroke-width="5" stroke-linecap="round" opacity=".55"/>' +
+          '<path d="' + d + '" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="5 26" opacity=".9">' + anim('stroke-dashoffset', '62;0', 1.3, k * .5) + '</path>';
+      });
+    }
+    // 잔 옆 눈금: 그 높이까지 차면 금빛
+    (opt.marks || []).forEach(function (m) {
+      var my = waterY(m.level), d = 'M' + (184 - (my - 34) * 16 / 126 + 5).toFixed(1) + ' ' + my.toFixed(1) + ' h10';
+      if (m.on) h += '<path d="' + d + '" stroke="#F2CF74" stroke-width="8" stroke-linecap="round" opacity=".25"/>';
+      h += '<path d="' + d + '" stroke="' + (m.on ? '#F2CF74' : 'rgba(255,255,255,.35)') + '" stroke-width="3" stroke-linecap="round"/>';
+    });
+    h += '<path d="' + CUP + '" fill="none" stroke="' + rim + '" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M110 190 V222 M76 228 H144" stroke="' + rim + '" stroke-width="3" stroke-linecap="round" fill="none"/>';
+    if (look >= 5) {
+      // 받침에 고인 물 · 퍼지는 물결 · 떨어지는 방울 · 위로 피어오르는 금빛 물보라
+      h += '<ellipse cx="110" cy="231" rx="58" ry="4" fill="' + p.top + '" opacity=".5"/>';
+      [0, 1.2].forEach(function (b) { h += '<ellipse cx="110" cy="231" fill="none" stroke="#fff" stroke-width="1" rx="20" ry="2">' + anim('rx', '20;95', 2.4, b) + anim('ry', '2;7', 2.4, b) + anim('opacity', '.7;0', 2.4, b) + '</ellipse>'; });
+      [[70, 0], [150, .9]].forEach(function (d) { h += '<circle cx="' + d[0] + '" r="2" fill="' + p.top + '">' + anim('cy', '230;252', 1.8, d[1]) + anim('opacity', '1;0', 1.8, d[1]) + '</circle>'; });
+      for (i = 0; i < 9; i++) {
+        var sx = 50 + i * 15, sb = (i * .47) % 3;
+        h += '<circle cx="' + sx + '" cy="30" r="' + (1.2 + (i % 3) * .5) + '" fill="#FFE3A0" filter="url(#' + id + 's)" opacity="0">' +
+          anim('cy', '30;' + (-10 - (i % 3) * 14), 2.8, sb) + anim('cx', sx + ';' + (sx + (i % 2 ? 8 : -8)), 2.8, sb) + anim('opacity', '0;1;0', 2.8, sb) + '</circle>';
+      }
+    }
+    return h + '</svg>';
+  }
+  // 단계 효과 없는 기본 잔(로그인 화면, 빈 잔)
+  function plainCup(level, w, id) {
     var y = waterY(level);
     return '<svg class="cup" viewBox="0 0 220 250" width="' + w + '" height="' + Math.round(w * 250 / 220) + '" aria-hidden="true">' +
       '<defs><clipPath id="' + id + '"><path d="' + CUP + '"/></clipPath></defs>' +
@@ -401,6 +532,86 @@ body.dark #toast { background: #fff; color: var(--navy); }
   }
   // 타이머: 1시간이면 잔의 90%까지 차오른다(표시용)
   function timerLevel(sec) { return 0.06 + 0.84 * Math.min(1, sec / 3600); }
+
+  /* ---------------- 내 잔 · 우리 잔 단계 ---------------- */
+  var H = 3600;
+  var MINE_AT = [1, 10 * H, 30 * H, 60 * H, 100 * H]; // 첫 기록·10·30·60·100시간 → 단계 1~5
+  function mineStage(sec) { var s = 0; MINE_AT.forEach(function (t, i) { if (sec >= t) s = i + 1; }); return s; }
+  // 내 잔은 100시간이면 가득 찬다. 기록이 있으면 최소 6%
+  function mineLevel(sec) { return sec > 0 ? 0.06 + 0.94 * Math.min(1, sec / (100 * H)) : 0; }
+  // 우리 잔은 목표의 1/5마다 눈금 하나(5,000시간이면 1,000시간마다). 반환: 넘은 눈금 수 0~5
+  function commStep(c) { return c.goalSec ? Math.min(5, Math.floor(c.total * 5 / c.goalSec)) : 0; }
+  var COMM_LOOK = [1, 2, 3, 3, 4, 5]; // 3번째 눈금은 하트 방울만 더한다
+
+  /* ---------------- 순간 연출: 저장할 때 물방울, 단계를 넘을 때 빛 터짐 ---------------- */
+  var K_SEEN = 'ovf_seen';
+  function seen() { try { var v = JSON.parse(store.get(K_SEEN) || 'null'); return v && v.who === S.me.cell + '|' + S.me.name ? v : { who: S.me.cell + '|' + S.me.name, mine: 0, comm: 0 }; } catch (e) { return { who: S.me.cell + '|' + S.me.name, mine: 0, comm: 0 }; } }
+  function fx(wrap, cls, css) { var d = document.createElement('div'); d.className = 'fx ' + cls; if (css) d.style.cssText += css; wrap.appendChild(d); return d; }
+  function cupBox(wrap) { var r = wrap.querySelector('svg').getBoundingClientRect(); return { top: r.top - wrap.getBoundingClientRect().top, h: r.height }; }
+  // 잔이 환해지고 빛 알갱이가 흩어진다. 가장 높은 단계는 두 겹으로 더 멀리
+  function bloom(id, gold, big) {
+    var wrap = document.getElementById(id); if (!wrap || !wrap.animate) return;
+    var c = gold ? '242,207,116' : '191,213,247', svg = wrap.querySelector('svg'), b = cupBox(wrap), cy = b.top + b.h * 0.45;
+    svg.animate([{ filter: 'brightness(1)' }, { filter: 'brightness(1.8)', offset: .25 }, { filter: 'brightness(1)' }], { duration: 1400, easing: 'ease-out' });
+    var g = fx(wrap, 'bloom', 'top:' + cy + 'px;background:radial-gradient(circle,rgba(' + c + ',.75),rgba(' + c + ',0) 70%)');
+    g.animate([{ transform: 'scale(.3)', opacity: 1 }, { transform: 'scale(7)', opacity: 0 }], { duration: 1300, easing: 'cubic-bezier(.2,.7,.3,1)' }).onfinish = function () { g.remove(); };
+    for (var i = 0; i < (big ? 32 : 16); i++) (function (i) {
+      var a = i / 16 * Math.PI * 2 + Math.random() * .3, r = (i >= 16 ? 130 : 70) + Math.random() * 50;
+      var m = fx(wrap, 'mote', 'top:' + cy + 'px;background:rgb(' + c + ');box-shadow:0 0 6px rgb(' + c + ')');
+      m.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + (Math.cos(a) * r) + 'px,' + (Math.sin(a) * r - 20) + 'px) scale(.3)', opacity: 0 }],
+        { duration: 1100 + Math.random() * 600, delay: i >= 16 ? 380 : 120, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'backwards' }).onfinish = function () { m.remove(); };
+    })(i);
+  }
+  // 화면을 그린 뒤: 처음 보는 단계·눈금이면 한 번만 빛을 터뜨린다(휴대폰에 '봤음' 저장)
+  function stageFx() {
+    if (!S.me || S.pour) return;
+    var v = seen(), changed = false;
+    if (S.tab === 'rec' && S.mine && !S.timer) {
+      var st = mineStage(S.mine.totalRecog);
+      if (st > v.mine) setTimeout(function () { bloom('cupwrapT', st >= 4, st >= 5); }, 200);
+      if (st !== v.mine) { v.mine = st; changed = true; }
+    }
+    if (S.tab === 'together' && S.community) {
+      var cs = commStep(S.community);
+      if (cs > v.comm) setTimeout(function () { bloom('cupwrapC', cs >= 4, cs >= 5); }, 200);
+      if (cs !== v.comm) { v.comm = cs; changed = true; }
+    }
+    if (changed) store.set(K_SEEN, JSON.stringify(v));
+  }
+  // 저장 직후: 물방울이 떨어져 튀고 물결이 퍼진 뒤 수위가 차오른다
+  function pour(from, to) {
+    S.pour = { cur: from };
+    render();
+    var wrap = document.getElementById('cupwrapT');
+    if (!wrap || !wrap.animate) { S.pour = null; render(); return; }
+    var b = cupBox(wrap), surface = b.top + waterY(from > 0 ? mineLevel(from) : 0.02) / 250 * b.h;
+    var d = fx(wrap, 'drop', 'top:' + b.top + 'px');
+    d.innerHTML = '<svg viewBox="0 0 16 22" width="16" height="22"><path d="M8 1s7 7.6 7 12.4A7 7 0 0 1 1 13.4C1 8.6 8 1 8 1z" fill="#D6E6FF"/></svg>';
+    d.animate([{ transform: 'translateY(-70px) scaleY(1.15)', opacity: 0 }, { opacity: 1, offset: .25 }, { transform: 'translateY(' + (surface - b.top - 20) + 'px) scaleY(1.15)', opacity: 1 }],
+      { duration: 620, easing: 'cubic-bezier(.55,0,1,.45)', fill: 'forwards' }).onfinish = function () {
+      d.remove();
+      var w = document.getElementById('cupwrapT');
+      if (w) {
+        [-1, 1, -0.5, 0.5, 0].forEach(function (k, i) {
+          var s = fx(w, 'spray', 'top:' + (surface - 2) + 'px'), dx = k * 26, up = 16 + (i % 3) * 8;
+          s.animate([{ transform: 'translate(0,0)', opacity: 1 }, { transform: 'translate(' + dx / 2 + 'px,' + (-up) + 'px)', offset: .45, opacity: 1 }, { transform: 'translate(' + dx + 'px,4px)', opacity: 0 }], { duration: 560 }).onfinish = function () { s.remove(); };
+        });
+        [0, 180].forEach(function (delay) {
+          var r = fx(w, 'ripple', 'top:' + (surface - 3) + 'px');
+          r.animate([{ transform: 'scale(.4)', opacity: .9 }, { transform: 'scale(3.4)', opacity: 0 }], { duration: 800, delay: delay, easing: 'ease-out', fill: 'backwards' }).onfinish = function () { r.remove(); };
+        });
+      }
+      var t0 = performance.now();
+      (function step(now) {
+        var p = Math.min(1, (now - t0) / 1400), cur = from + (to - from) * (1 - Math.pow(1 - p, 3));
+        if (S.pour) S.pour.cur = cur;
+        setCupLevel('cupT', mineLevel(cur));
+        var v = document.getElementById('mineV'); if (v) v.textContent = hm(cur);
+        if (p < 1 && S.pour) return requestAnimationFrame(step);
+        S.pour = null; softRender();
+      })(t0);
+    };
+  }
 
   /* ---------------- 기도 음악 ----------------
    * 드라이브 링크면 앱에 들어 있는 20분 반복 음원을 쓴다(한 번 받으면 휴대폰에 저장).
@@ -616,7 +827,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
     if (!tabs.some(function (t) { return t[0] === S.tab; })) S.tab = tabs[0][0];
     var body = { rec: renderRec, mine: renderMine, together: renderTogether, leader: renderLeader, admin: renderAdmin }[S.tab]();
     return '<main class="scroll" id="scroller"><div class="wrap"><div class="topbar"><div class="brand">OVERFLOW 5000</div>' +
-      '<button class="who" data-act="menu">' + whoLabel(S.me) + I.down + '</button></div>' + body + '</div></main>' +
+      '<button class="who" data-act="menu">' + whoLabel(S.me) + I.down + '</button></div>' + body + '</div></main>' + floodHtml() +
       (tabs.length > 1 ? '<nav class="nav"><div class="nav-in">' + tabs.map(function (t) {
         return '<button data-act="tab" data-tab="' + t[0] + '"' + (S.tab === t[0] ? ' aria-current="page"' : '') + '>' + t[2] + t[1] + '</button>';
       }).join('') + '</div></nav>' : '');
@@ -633,11 +844,12 @@ body.dark #toast { background: #fff; color: var(--navy); }
     var cfg = S.cfg, m = S.mine, t = today(), r = S.timer, h = toolsRow();
     var before = t < cfg.start, after = t > cfg.end;
     if (cfg.notice) h += '<div class="line-note">' + esc(cfg.notice) + '</div>';
-    h += '<div class="total-top"><div class="k">10월 누적</div><div class="v">' + hm(m.totalRecog) + '</div></div>';
+    var shown = S.pour ? S.pour.cur : m.totalRecog, look = mineStage(shown);
+    h += '<div class="total-top"><div class="k">10월 누적</div><div class="v" id="mineV">' + hm(shown) + '</div></div>';
 
     if (r) {
       var c = catOf(r.cat), el = Math.floor((Date.now() - r.startMs) / 1000);
-      h += cupSvg(timerLevel(el), 150, 'cupT') +
+      h += '<div class="cupwrap" id="cupwrapT">' + cupSvg(timerLevel(el), 150, 'cupT', Math.min(4, look)) + '</div>' +
         '<div class="timer-num num" id="clock">' + clock(el) + '</div>' +
         '<div class="sub">' + esc(c.name) + ' 진행 중 · 인정 <span id="recogLive">' + hm(el * c.mult) + '</span></div>' +
         (isSundayWarn(r.cat, ymdLocal(new Date(r.startMs))) ? '<div class="warn">' + SUNDAY_MSG + '</div>' : '') +
@@ -647,7 +859,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
     }
 
     var sel = S.cat ? catOf(S.cat) : null;
-    h += cupSvg(m.weekRecog > 0 ? 0.14 : 0.06, 150, 'cupT') +
+    h += '<div class="cupwrap" id="cupwrapT">' + cupSvg(mineLevel(shown), 150, 'cupT', look) + '</div>' +
       '<div class="timer-num num idle">00:00:00</div>' +
       '<div class="sub">' + (m.week ? '이번 주 <b>' + hm(m.weekRecog) + '</b> 담았어요' : (before ? md(cfg.start) + '부터 시작해요' : '&nbsp;')) + '</div>' +
       '<div class="pills" role="group" aria-label="활동 종류">' + cfg.cats.map(function (c) {
@@ -693,19 +905,36 @@ body.dark #toast { background: #fff; color: var(--navy); }
   function renderTogether() {
     var c = S.community;
     if (!c) { loadCommunity(); return '<div class="boot"><div class="spinner"></div></div>'; }
-    var ratio = c.total / c.goalSec, maxCell = Math.max.apply(null, c.cells.map(function (x) { return x.total; }).concat([1]));
-    var h = '<div class="eyebrow" style="margin-top:8px">함께 채우는 잔</div>' +
-      cupSvg(ratio > 0 ? Math.max(0.1, ratio) : 0, 150, 'cupC') +
-      '<div class="total"><span class="num">' + hours(c.total) + '</span><div>' + hours(c.goalSec) + '시간 중 ' + pct(c.total, c.goalSec) + '%' + (ratio >= 1 ? ' · 잔이 넘쳤어요' : '') + '</div></div>' +
-      '<div class="bar"><i style="width:' + Math.min(100, pct(c.total, c.goalSec)) + '%"></i></div>' +
-      '<div class="kv-dark" style="margin-top:22px"><span>이번 주' + (c.week ? ' (' + c.week.no + '주차)' : '') + '</span><b>' + hm(c.weekTotal) + '</b></div>' +
-      '<div class="kv-dark"><span>이번 주 참여</span><b>' + c.weekPeople + ' / ' + c.people + '명</b></div>' +
-      '<button class="more" data-act="toggleCells">' + (S.showCells ? '셀별 누적 접기' : '셀별 누적 보기') + '</button>';
+    var ratio = c.goalSec ? c.total / c.goalSec : 0, step = commStep(c), over = ratio >= 1, maxCell = Math.max.apply(null, c.cells.map(function (x) { return x.total; }).concat([1]));
+    var marks = [1, 2, 3, 4].map(function (k) { return { level: k / 5, on: step >= k }; });
+    var h = '<div class="tog-head"><span class="eyebrow">함께 채우는 잔</span>' + (c.week ? '<span class="wk">오늘 <b>' + c.week.no + '주차</b> · ' + md(c.week.start) + ' ~ ' + md(c.week.end) + '</span>' : '') + '</div>' +
+      '<div class="cupwrap big" id="cupwrapC">' + cupSvg(ratio > 0 ? Math.max(0.1, ratio) : 0, 200, 'cupC', COMM_LOOK[step], { hearts: step >= 3, marks: marks }) + '</div>' +
+      '<div class="total"><div class="sum"><span class="num">' + hours(c.total) + '</span><span class="u">시간</span></div>' +
+      '<div>' + hours(c.goalSec) + '시간 중 <b>' + pct(c.total, c.goalSec).toFixed(1) + '%</b>' + (over ? ' · <span class="gold">잔이 넘쳤어요</span>' : '') + '</div></div>';
+    if (over) h += '<div class="vfull' + (S._verseShown ? ' still' : '') + '">' + ['주께서 내 원수의 목전에서', '내게 상을 차려 주시고', '기름을 내 머리에 부으셨으니', '내 잔이 넘치나이다'].map(function (l, i) {
+      return '<span style="animation-delay:' + (0.8 + i * 0.7) + 's">' + l + '</span>';
+    }).join('') + '<small style="animation-delay:3.8s">시편 23:5</small></div>';
+    if (over) S._verseShown = true;
+    h += '<button class="more" data-act="toggleCells">' + (S.showCells ? '셀별 누적 접기' : '셀별 누적 보기') + '</button>';
     if (S.showCells) h += '<div class="cellbars">' + c.cells.map(function (x) {
       return '<div class="c"><div class="top">' + (x.cell ? esc(x.cell) : '미셀') + '<span>' + hm(x.total) + '</span></div>' +
         '<div class="track"><i style="width:' + (x.total / maxCell * 100).toFixed(1) + '%"></i></div></div>';
     }).join('') + '</div><p class="foot-note" style="color:var(--sky-faint)">명단 순서예요. 순위가 아니에요.</p>';
+    if (over) h += '<div class="flood-pad"></div>';
     return h;
+  }
+  // 5,000시간을 넘으면 화면 아래로 물이 차오른다(탭 메뉴 바로 위, 스크롤과 상관없이 고정)
+  function floodHtml() {
+    var c = S.community;
+    if (S.tab !== 'together' || !c || !c.goalSec || c.total < c.goalSec) return '';
+    var w = function (y, a) { var d = 'M0 ' + y; for (var x = 0; x < 800; x += 2 * a) d += ' Q' + (x + a / 2) + ' ' + (y - 12) + ' ' + (x + a) + ' ' + y + ' T' + (x + 2 * a) + ' ' + y; return d; };
+    var html = '<div class="flood' + (S._floodShown ? ' on still' : '') + '" id="flood"><svg viewBox="0 0 800 140" preserveAspectRatio="none" aria-hidden="true">' +
+      '<defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86B8FF"/><stop offset="1" stop-color="#1D56C8"/></linearGradient></defs>' +
+      '<g class="w1"><path fill="#BFD5F7" opacity=".35" d="' + w(10, 50) + ' V140 H0 Z"/></g>' +
+      '<g class="w2"><path fill="url(#fg)" opacity=".75" d="' + w(22, 66.5) + ' V140 H0 Z"/></g>' +
+      '<g class="w3"><path fill="url(#fg)" d="' + w(34, 40) + ' V140 H0 Z"/><path fill="none" stroke="#FFE3A0" stroke-width="1.5" opacity=".7" d="' + w(34, 40) + '"/></g></svg></div>';
+    S._floodShown = true;
+    return html;
   }
   function loadCommunity() {
     if (S._lc) return; S._lc = true;
@@ -985,6 +1214,9 @@ body.dark #toast { background: #fff; color: var(--navy); }
     else if (!S.me) app.innerHTML = '<div class="boot"><div class="spinner"></div></div>';
     else app.innerHTML = renderApp();
     sc = document.getElementById('scroller'); if (sc && keep) sc.scrollTop = keep;
+    var f = document.getElementById('flood');
+    if (f && !f.classList.contains('on')) requestAnimationFrame(function () { requestAnimationFrame(function () { f.classList.add('on'); }); });
+    stageFx();
   }
   function render() { renderMain(); renderSheet(); }
   // 시트(입력창)가 열려 있으면 입력값이 지워지지 않게 뒤 화면만 다시 그린다
@@ -1042,7 +1274,12 @@ body.dark #toast { background: #fff; color: var(--navy); }
     else done(false);
   }
 
-  function afterSave(res, msg) { S.busy = false; S.sheet = null; S.mine = res; render(); if (msg) toast(msg); refreshViews(); }
+  function afterSave(res, msg) {
+    var from = S.mine ? S.mine.totalRecog : 0;
+    S.busy = false; S.sheet = null; S.mine = res;
+    if (S.tab === 'rec' && !S.timer && res.totalRecog > from) pour(from, res.totalRecog); else render();
+    if (msg) toast(msg); refreshViews();
+  }
   function sheetErr(id, e) { S.busy = false; renderSheet(); var el = document.getElementById(id); if (el) el.textContent = e.message; }
   function confirmSheet(title, desc, yes, fn) { S.sheet = { type: 'confirm', title: title, desc: desc, yes: yes, then: fn }; renderSheet(); }
 
