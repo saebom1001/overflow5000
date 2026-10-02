@@ -34,7 +34,12 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+/* 앱 틀: 화면 전체를 세로로 나눠 위는 스크롤 영역, 아래는 탭. 탭은 화면 크기·탭과 상관없이 항상 맨 아래 */
+#app { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); box-sizing: border-box; }
+.scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+body.login { background: var(--navy); }
+body.login .scroll { background: #fff; }
 body {
   background: #fff; color: var(--ink);
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
@@ -52,8 +57,8 @@ body.dark .spinner { border-color: rgba(255,255,255,.1); border-top-color: var(-
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* 뼈대 */
-.wrap { max-width: 480px; margin: 0 auto; padding: 0 20px calc(88px + var(--safe-b)); }
-.topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 0 4px; }
+.wrap { max-width: 480px; margin: 0 auto; padding: 0 20px 24px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 4px; }
 .brand { font-size: 11px; letter-spacing: .22em; font-weight: 700; color: var(--blue); }
 body.dark .brand { color: var(--sky); }
 .who { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); padding: 6px 0 6px 8px; }
@@ -119,7 +124,7 @@ body.dark .warn { background: rgba(240,100,60,.14); color: #FFC3B0; }
 .bgm-load i { display: block; height: 100%; background: var(--blue); transition: width .2s; }
 .bgm-x { flex: none; width: 36px; height: 36px; border-radius: 50%; color: var(--muted); display: grid; place-items: center; }
 .spinner.sm { width: 18px; height: 18px; border-width: 2px; border-color: rgba(255,255,255,.3); border-top-color: #fff; }
-body.bgm-open .wrap { padding-bottom: calc(160px + var(--safe-b)); }
+body.bgm-open .wrap { padding-bottom: 96px; }
 
 /* 버튼 */
 .btn { display: block; width: 100%; padding: 15px; border-radius: 16px; background: var(--navy); color: #fff; font-weight: 700; font-size: 16px; margin-top: 20px; text-align: center; text-decoration: none; }
@@ -196,7 +201,7 @@ body.dark .btn { background: var(--sky); color: var(--navy); }
 .person .row-btns .btn { width: auto; flex: 1; }
 
 /* 하단 탭 */
-.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: #fff; border-top: 1px solid var(--line); padding: 6px 8px calc(8px + var(--safe-b)); }
+.nav { flex: none; z-index: 20; background: #fff; border-top: 1px solid var(--line); padding: 6px 8px calc(8px + var(--safe-b)); }
 body.dark .nav { background: var(--navy); border-top-color: rgba(255,255,255,.08); }
 .nav-in { max-width: 480px; margin: 0 auto; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
 .nav button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; font-size: 11px; font-weight: 600; color: #A7ADC2; }
@@ -548,11 +553,11 @@ body.dark #toast { background: #fff; color: var(--navy); }
     }
     // 비밀번호 단계는 머리 부분을 줄여서 키패드까지 한 화면에 보이게 한다
     var pinStep = L.step !== 'name';
-    return '<div class="hero' + (pinStep ? ' compact' : '') + '">' + (pinStep ? '' : cupSvg(0.55, 64, 'cupL').replace('class="cup"', 'class="cup" style="margin:0 auto"')) +
+    return '<main class="scroll"><div class="hero' + (pinStep ? ' compact' : '') + '">' + (pinStep ? '' : cupSvg(0.55, 64, 'cupL').replace('class="cup"', 'class="cup" style="margin:0 auto"')) +
       '<h1 class="num">OVERFLOW <span>5000</span></h1>' +
       (pinStep ? '' : '<div class="v">에제르 영커플 · 믿음의 명문가 프로젝트<br><br>주께서 내 원수의 목전에서 내게 상을 차려 주시고<br>기름을 내 머리에 부으셨으니 내 잔이 넘치나이다<br>시 23:5</div>') +
       '<svg class="wave" viewBox="0 0 400 28" preserveAspectRatio="none"><path d="M0 16 C60 2 110 28 170 14 S290 2 340 16 S390 22 400 18 V28 H0z" fill="#fff"/></svg></div>' +
-      '<div class="login' + (pinStep ? ' compact' : '') + '">' + body + (pinStep ? '' : '<p class="foot-note">Safari·Chrome에서 열고 홈 화면에 추가하면 다음부터 바로 들어올 수 있어요.</p>') + '</div>';
+      '<div class="login' + (pinStep ? ' compact' : '') + '">' + body + (pinStep ? '' : '<p class="foot-note">Safari·Chrome에서 열고 홈 화면에 추가하면 다음부터 바로 들어올 수 있어요.</p>') + '</div></main>';
   }
 
   function doSearch(q) {
@@ -610,8 +615,8 @@ body.dark #toast { background: #fff; color: var(--navy); }
     var tabs = tabsFor();
     if (!tabs.some(function (t) { return t[0] === S.tab; })) S.tab = tabs[0][0];
     var body = { rec: renderRec, mine: renderMine, together: renderTogether, leader: renderLeader, admin: renderAdmin }[S.tab]();
-    return '<div class="wrap"><div class="topbar"><div class="brand">OVERFLOW 5000</div>' +
-      '<button class="who" data-act="menu">' + whoLabel(S.me) + I.down + '</button></div>' + body + '</div>' +
+    return '<main class="scroll" id="scroller"><div class="wrap"><div class="topbar"><div class="brand">OVERFLOW 5000</div>' +
+      '<button class="who" data-act="menu">' + whoLabel(S.me) + I.down + '</button></div>' + body + '</div></main>' +
       (tabs.length > 1 ? '<nav class="nav"><div class="nav-in">' + tabs.map(function (t) {
         return '<button data-act="tab" data-tab="' + t[0] + '"' + (S.tab === t[0] ? ' aria-current="page"' : '') + '>' + t[2] + t[1] + '</button>';
       }).join('') + '</div></nav>' : '');
@@ -974,9 +979,12 @@ body.dark #toast { background: #fff; color: var(--navy); }
   function renderMain() {
     var app = document.getElementById('app');
     document.body.classList.toggle('dark', !!isDark());
+    document.body.classList.toggle('login', !S.token);
+    var sc = document.getElementById('scroller'), keep = sc ? sc.scrollTop : 0; // 다시 그려도 스크롤 위치 유지
     if (!S.token) app.innerHTML = renderLogin();
     else if (!S.me) app.innerHTML = '<div class="boot"><div class="spinner"></div></div>';
     else app.innerHTML = renderApp();
+    sc = document.getElementById('scroller'); if (sc && keep) sc.scrollTop = keep;
   }
   function render() { renderMain(); renderSheet(); }
   // 시트(입력창)가 열려 있으면 입력값이 지워지지 않게 뒤 화면만 다시 그린다
@@ -1042,7 +1050,7 @@ body.dark #toast { background: #fff; color: var(--navy); }
     pick: function (el) { pickPerson(S.login.results[+el.dataset.i]); },
     key: function (el) { pressKey(el.dataset.k); },
     loginBack: function () { S.login.step = 'name'; S.login.pin = ''; S.login.err = ''; render(); },
-    tab: function (el) { S.tab = el.dataset.tab; render(); window.scrollTo(0, 0); if (el.dataset.tab !== 'rec' && el.dataset.tab !== 'mine') refreshViews(); },
+    tab: function (el) { S.tab = el.dataset.tab; render(); var sc = document.getElementById('scroller'); if (sc) sc.scrollTop = 0; if (el.dataset.tab !== 'rec' && el.dataset.tab !== 'mine') refreshViews(); },
     menu: function () { S.sheet = { type: 'menu' }; renderSheet(); },
     reload: function () { S.sheet = null; boot(); },
     logout: function () { var t = S.token; S.sheet = null; api('logout', t).catch(function () {}); forceLogout('로그아웃했어요.'); },
